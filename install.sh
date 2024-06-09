@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Include .bashrc for Deno PATH
+source ~/.bashrc
+
 # 1. Check for necessary tools
 if ! command -v git >/dev/null; then
     echo >&2 "Error: git is not installed or not accessible via \"git\" command (PATH missing?)."
@@ -28,9 +31,9 @@ if [ -f "$ENV_FILE" ]; then
     read -p "Enter your OpenAI API key [${TCGB_API_KEY}]: " NEW_TCGB_API_KEY
     read -p "Enter your Telegram bot token [${TCGB_TOKEN}]: " NEW_TCGB_TOKEN
     read -p "Enter allowed users [${TCGB_ALLOWED_USERS}]: " NEW_TCGB_ALLOWED_USERS
-    TCGB_API_KEY=${input_TCGB_API_KEY:-$TCGB_API_KEY}
-    TCGB_TOKEN=${input_TCGB_TOKEN:-$TCGB_TOKEN}
-    TCGB_ALLOWED_USERS=${input_TCGB_ALLOWED_USERS:-$TCGB_ALLOWED_USERS}
+    TCGB_API_KEY=${NEW_TCGB_API_KEY:-$TCGB_API_KEY}
+    TCGB_TOKEN=${NEW_TCGB_TOKEN:-$TCGB_TOKEN}
+    TCGB_ALLOWED_USERS=${NEW_TCGB_ALLOWED_USERS:-$TCGB_ALLOWED_USERS}
 else
     # 2.1 Prompt for input env values
     read -p "Enter your OpenAI API key: " TCGB_API_KEY
@@ -87,9 +90,15 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-# 6. Reload systemd, enable and start the service
+# 6. Reload systemd, enable and start/restart the service
 sudo systemctl daemon-reload
 sudo systemctl enable ${SERVICE_NAME}
-sudo systemctl start ${SERVICE_NAME}
 
-echo "The service ${SERVICE_NAME} has been successfully installed and started."
+# Check if the service is already running
+if systemctl is-active --quiet ${SERVICE_NAME}; then
+    sudo systemctl restart ${SERVICE_NAME}
+    echo "The service ${SERVICE_NAME} has been successfully restarted."
+else
+    sudo systemctl start ${SERVICE_NAME}
+    echo "The service ${SERVICE_NAME} has been successfully started."
+fi
