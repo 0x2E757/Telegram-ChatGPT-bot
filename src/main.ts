@@ -3,10 +3,22 @@ import OpenAI from "https://deno.land/x/openai@v4.47.1/mod.ts";
 import { CustomContext, MessageHandler, SessionData } from "./classes/index.ts";
 import { DialogRole, GPTModel, KeyboardActions } from "./enums.ts";
 
-const apiKey = "YOUR-OPENAI-API-KEY";
-const token = "YOUR-TELEGRAM-BOT-TOKEN";
+const env_prefix = "TCGB_"; // [T]elegram [C]hat[G]PT [B]ot
+const apiKey = Deno.env.get(env_prefix + "API_KEY");
+const token = Deno.env.get(env_prefix + "TOKEN");
+const allowedUsers = Deno.env.get(env_prefix + "ALLOWED_USERS");
 
-CustomContext.allowedUsers.add("YOUR-TELEGRAM-LOGIN");
+if (!apiKey) throw new Error("OpenAI API key is not set.");
+if (!token) throw new Error("Telegram bot token is not set.");
+if (!allowedUsers) throw new Error("Allowed users list is not set.");
+
+const gptInstructions = [
+    "Do short answers unless user asks for details.",
+    "In detailed messages use bold to highlight the main idea.",
+    "Answer using the language user used in his last message unless he asks for specific language.",
+].join(" ");
+
+allowedUsers.split(/[ ,;]/).forEach(CustomContext.allowedUsers.add);
 
 const bot = new Bot(token, {
     ContextConstructor: CustomContext,
@@ -120,7 +132,10 @@ bot.on("message:text", async (ctx) => {
 
         // Create chat completion chunk stream if streaming mode
         const chatCompletionChunkStream = await openai.chat.completions.create({
-            messages: ctx.session.dialogMessages,
+            messages: [
+                { role: "system", content: gptInstructions },
+                ...ctx.session.dialogMessages,
+            ],
             model: ctx.session.model,
             stream: ctx.session.streaming,
             temperature: ctx.session.temperature,
@@ -141,7 +156,10 @@ bot.on("message:text", async (ctx) => {
 
         // Create chat completion if not streaming mode
         const chatCompletion = await openai.chat.completions.create({
-            messages: ctx.session.dialogMessages,
+            messages: [
+                { role: "system", content: gptInstructions },
+                ...ctx.session.dialogMessages,
+            ],
             model: ctx.session.model,
             stream: ctx.session.streaming,
             temperature: ctx.session.temperature,
