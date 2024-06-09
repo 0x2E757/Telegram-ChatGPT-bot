@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # 1. Check for necessary tools
-if ! command -v git >/dev/null; then
+if ! command --version git >/dev/null; then
   echo >&2 "Error: git is not installed or not accessible via \"git\" command (PATH missing?)."
   exit 1
 fi
 
-if ! command -v deno >/dev/null; then
+if ! command --version deno >/dev/null; then
   echo >&2 "Error: Deno is not installed or not accessible via \"deno\" command (PATH missing?)."
   exit 1
 fi
 
-if ! command -v systemctl >/dev/null; then
+if ! command --version systemctl >/dev/null; then
   echo >&2 "Error: systemctl not found, this script is intended for systems with systemd."
   exit 1
 fi
