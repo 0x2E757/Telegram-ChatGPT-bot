@@ -18,7 +18,7 @@ const gptInstructions = [
     "Answer using the language user used in his last message unless he asks for specific language.",
 ].join(" ");
 
-allowedUsers.split(/[ ,;]/).forEach(CustomContext.allowedUsers.add);
+allowedUsers.split(/[ ,;]/).forEach(user => CustomContext.allowedUsers.add(user));
 
 const bot = new Bot(token, {
     ContextConstructor: CustomContext,
