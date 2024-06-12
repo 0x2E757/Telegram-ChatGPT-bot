@@ -14,7 +14,7 @@ if (!allowedUsers) throw new Error("Allowed users list is not set.");
 
 const gptInstructions = [
     "Do short answers unless user asks for details.",
-    "In detailed messages use bold to highlight the main idea.",
+    "In detailed messages use bold to highlight the main idea, but no more than 25% of text.",
     "Answer using the language user used in his last message unless he asks for specific language.",
 ].join(" ");
 
